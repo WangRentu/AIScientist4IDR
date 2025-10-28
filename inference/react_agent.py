@@ -57,9 +57,17 @@ class MultiTurnReactAgent(FnCallAgent):
         return "<think>" in content and "</think>" in content
     
     def call_server(self, msgs, planning_port, max_tries=10):
+        # openai_api_key = "EMPTY"
+        # openai_api_base = f"http://127.0.0.1:{planning_port}/v1"
         
-        openai_api_key = "EMPTY"
-        openai_api_base = f"http://127.0.0.1:{planning_port}/v1"
+        # Prefer external endpoint from environment if available; otherwise fall back to localhost ports
+        api_base_env = os.getenv("API_BASE") or os.getenv("BASE_URL") or os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_API_BASE")
+        openai_api_key = os.getenv("API_KEY") or os.getenv("OPENAI_API_KEY") or "EMPTY"
+        if api_base_env:
+            base = api_base_env.rstrip("/")
+            openai_api_base = base if base.endswith("/v1") else f"{base}/v1"
+        else:
+            openai_api_base = f"http://127.0.0.1:{planning_port}/v1"
 
         client = OpenAI(
             api_key=openai_api_key,
